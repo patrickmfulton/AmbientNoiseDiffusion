@@ -29,7 +29,7 @@
 % pfulton@cornell.edu
 % July 2022
 % https://github.com/patrickmfulton/AmbientNoiseDiffusion
-% modified by E Brodsky December 2022
+% modified by Emily E.  Brodsky (brodsky@ucsc.edu) December 2022
 % to include fitting and recovering the diffusivity
 
 clear, close all;
