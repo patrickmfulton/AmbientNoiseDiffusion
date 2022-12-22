@@ -29,7 +29,7 @@
 % pfulton@cornell.edu
 % July 2022
 % https://github.com/patrickmfulton/AmbientNoiseDiffusion
-% modified by E Brodsky Decembr 2022
+% modified by E Brodsky December 2022
 
 clear, close all;
 
