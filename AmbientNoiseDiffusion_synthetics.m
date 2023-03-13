@@ -29,9 +29,10 @@
 % pfulton@cornell.edu
 % July 2022
 % https://github.com/patrickmfulton/AmbientNoiseDiffusion
+% modified by Emily E.  Brodsky (brodsky@ucsc.edu) December 2022
+% to include fitting and recovering the diffusivity
 
-
-clear, close all; clc
+clear, close all;
 
 %%
 savepdf=0; %save pdf?
@@ -161,6 +162,26 @@ dlag2=(1:length(Gd))*dt;  %convert lags units to time
 Fdn=Fd/max(Fd(dlag2<864000)); %normalize by max within short lag
 FF(:,ii)=Fd;  %store empirical response from separate runs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Fit Diffusivity
+modelfun = @(D,t) f_DiffGreen(t,L,D,1)/max(f_DiffGreen(t,L,D,1));
+D0 = [1e-4];
+i1=find(diff(Gdn,1)>0,1); % eliminates the small, unstable region near 0 lag. Starts with the slope positive
+i2=max(find(t<5*24*3600)); % fit first 5 days of data 
+% should be adjusted to longer if the hydraulic diffusivity is very low
+I=(i1:i2);
+mdl = fitnlm(t(I),Gdn(I)/max(Gdn(I)),modelfun,D0);
+Dfit=mdl.Coefficients.Estimate
+Gfit=f_DiffGreen(t,L,Dfit,1)/max(f_DiffGreen(t,L,Dfit,1));
+
+modelfunF = @(D,t) f_DerDiffGreen(t,L,D,1)/max(f_DerDiffGreen(t,L,D,1));
+i1=find(diff(Fdn,1)>0,1)+2;
+i2=max(find(t<5*24*3600));
+I=(i1:i2);
+mdl = fitnlm(t(I),Fdn(I)/max(Fdn(I)),modelfunF,D0);
+Dfit=mdl.Coefficients.Estimate
+Ffit=f_DerDiffGreen(t,L,Dfit,1)/max(f_DerDiffGreen(t,L,Dfit,1));
+
+
 
 %% Plot synthetic time series and empirical & analytical response functions
 figure(2)
@@ -177,6 +198,7 @@ plot(dlag2/86400,Gdn,'k-','linewidth',2), hold on
 hold on
 
     plot(t/86400,G_th./max(G_th),'r--','linewidth',2)
+    plot(t/86400,Gfit,'c:','linewidth',2)
 
 xlim([0 5])
 xlabel('Lag (days)')
@@ -187,6 +209,7 @@ ax(4)=subplot(3,2,5);
 plot(dlag2/86400,Fdn,'k-','linewidth',2), hold on
 hold on
 plot(t/86400,F_th./max(F_th),'r--','linewidth',2)
+    plot(t/86400,Ffit,'c:','linewidth',2)
 
 xlim([0 5])
 ylim([-1 1])
@@ -199,6 +222,7 @@ set(gca,'fontsize',16)
 
 end
 end
+legend('Numerical Simulation','Analytical Solution','Recovered')
 
 if savepdf==1
 save2pdf(['Figure2ABC_',datestr(now,'yyyymmddhhMM')])  
