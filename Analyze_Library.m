@@ -3,7 +3,8 @@ clear, close all; clc
 % processes synthetic library
 for ii = 1:41
     for nset=1:2,
-    load sim_20210514
+    load sim_20210514 % THIS FILE OF SIMULATION DATA IS AVAILABLE ON ZENODO: DOI: 10.5281/zenodo.7758187
+
 
     N=length(sim.t(ii,:));
     N2=floor(N/2);
